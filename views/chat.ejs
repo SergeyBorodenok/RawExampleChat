@@ -1,0 +1,101 @@
+
+<script src="socket.io/socket.io.js"></script>
+<span id="name"><%=user.username%></span>
+<div id="room">
+    <ul></ul>
+        <form  name="work">
+            <input class="form-control"  autocomplete="off" autofocus placeholder="Message">
+          <input type="button" onclick="javascript:send()">
+        </form>
+    <form method="post" action="/logout">
+        <input type="submit" value="Logout">
+    </form>
+    <div>
+        <span>List participant</span>
+        <ul id="listParticipant">
+
+        </ul>
+    </div>
+</div>
+<script>
+    var socket=io.connect();
+
+    var form=document.querySelector('#room>form');
+    var ul=document.querySelector('#room>ul');
+    var username=document.querySelector('#name').innerHTML;
+
+
+    window.onload=socket.emit('conn',username,function(data){
+        printStatus(username+" > "+"вошел в чат");
+    });
+    window.onload=socket.emit('loadAllUser',function(data){
+
+    });
+
+    function send() {
+            var input = document.querySelector('.form-control');
+            var text = input.value;
+            input.value = '';
+            console.log("this is username="+username);
+            socket.emit('message',username, text,function(data){
+
+                printMessage(username+" > "+text);
+            });
+            return false;
+    }
+    function printMessage(text) {
+        var ul = document.querySelector('#room>ul');
+        var li = document.createElement('LI');
+        li.innerHTML = text;
+        ul.appendChild(li);
+    }
+
+    function printStatus(status) {
+        var ul = document.querySelector('#room>ul');
+        var li = document.createElement('LI');
+        var i = document.createElement('i');
+        i.innerHTML = status;
+
+        li.appendChild(i);
+        ul.appendChild(li);
+    }
+    socket.on('message', function(usernameLoad,text){
+      printMessage(usernameLoad+" > "+text);
+    });
+    socket.on('leave', function(username) {
+            printStatus(username + " вышел из чата");
+            });
+    socket.on('join', function (username) {
+        printStatus(username + " вошел в чат");
+
+
+    });
+    socket.on('getAllUser',function(collUsers){
+        collUsers.forEach(function( users1){
+            var ul = document.querySelector('#listParticipant');
+            var li = document.createElement('LI');
+            li.innerHTML = users1.username;
+            ul.appendChild(li);
+
+        });
+
+    });
+
+   /* socket.on('youAlive',function(){
+       socket.emit('iAlive',username);
+    });
+    socket.on('aliveUserCall',function(username){
+        var collLi=document.querySelectorAll('#listParticipant>li');
+        collLi.forEach(function(li){
+           if(li.innerHTML==username) {
+               li.style.color="green";
+           }else{
+               console.log('not use');
+           }
+        });
+
+    });
+    */
+
+
+</script>
